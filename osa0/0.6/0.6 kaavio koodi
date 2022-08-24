@@ -1,0 +1,7 @@
+selain->palvelin: HTTP POST https://studies.cs.helsinki.fi/exampleapp/new_note_spa
+
+palvelin-->selain: data.json
+
+note over selain:
+tapahtumankäsittelijä renderöi muistiinpanot näytölle
+end note
