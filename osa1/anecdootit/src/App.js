@@ -23,7 +23,7 @@ const App = () => {
   const reactVote = () => {
     const copy = [ ...points ]
     copy[selected] += 1
-    setPoints(copy)
+    setPoints(copy)   
   }
 
   return (
