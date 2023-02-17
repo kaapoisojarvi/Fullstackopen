@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import personService from './services/persons'
 
 const Filter = (props) =>{
   return (
@@ -23,7 +23,11 @@ const AddNew = (props) =>{
 const Contacts = (props) =>{
   return (
     <ul>
-    {props.persons.filter(person => person.name.toLowerCase().includes(props.newFilter.toLowerCase())).map(person => <p key = {person.name}>{person.name} {person.number}</p>)}
+    {props.persons.filter(person => person.name.toLowerCase().includes(props.newFilter.toLowerCase())).map(person =>
+      <div key = {person.name}>
+        <p>{person.name} {person.number}</p>
+        <button onClick = {() => props.deleteP(person.id,person.name)}> delete</button>
+      </div>)}
   </ul>
   )
 }
@@ -35,10 +39,10 @@ const App = () => {
   const [newFilter, setnewFilter] = useState('')
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        setPersons(response.data)
+    personService
+      .getAll()
+      .then(data => {
+        setPersons(data)
       })
   }, [])
 
@@ -60,12 +64,42 @@ const App = () => {
   const addPerson = (event) => {
     event.preventDefault()
     const contains = persons.some(person => person.name === newName)
-    console.log(newName, contains, persons)
     const newPerson = {
       name: newName,
       number: newNumber
     }
-    contains ? alert(`${newName} is already added to the phonebook!`) : setPersons(persons.concat(newPerson))
+    if(contains){
+      const confirmed = window.confirm(`${newName} is already added to the phonebook, replace the old number with the new one?`)
+      if(confirmed){
+        const foundPerson = persons.find(person => person.name === newName)
+        const changedPerson = {...foundPerson, number: newNumber}
+        console.log(changedPerson);
+        
+        personService
+          .newNum(foundPerson.id,changedPerson)
+          .then(response => {
+            setPersons(persons.map(person => person.id === response.id ? response : person))
+            console.log('Persons set');
+          }).catch(('Error when editing existing person!')
+          )
+      }
+    }else{
+      personService
+        .create(newPerson)
+          .then(person => {
+            setPersons(persons.concat(person))
+            console.log('Persons set');
+          }).catch(('Error when adding new person to server!')
+          )
+        }
+  }
+
+  const deletePerson = (id,name) => {
+    const confirmed = window.confirm(`Delete ${name}?`)
+    if(confirmed){
+      setPersons(persons.filter(person => person.id !== id))
+      personService.dPerson(id)
+    }
   }
 
   return (
@@ -75,10 +109,9 @@ const App = () => {
       <h2>Add new</h2>
       <AddNew addPerson = {addPerson} newName = {newName} handleNameChange = {handleNameChange} newNumber = {newNumber} handleNumberChange = {handleNumberChange}/>
       <h2>Numbers</h2>
-      <Contacts persons = {persons} newFilter = {newFilter}/>
+      <Contacts persons = {persons} newFilter = {newFilter} deleteP = {deletePerson}/>
     </div>
   )
-
 }
 
 export default App
