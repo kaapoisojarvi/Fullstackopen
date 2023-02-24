@@ -1,0 +1,30 @@
+h2 {
+    color: rgb(40, 211, 202);
+    font-style: italic;
+}
+
+.elements {
+    color: rgb(0, 0, 0);
+    padding-top: 3px;
+    font-size: 15px;
+}
+
+.inform {
+    color: rgb(17, 230, 17);
+    background: lightgrey;
+    font-size: 20px;
+    border-style: solid;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+
+  .error {
+    color: rgb(245, 8, 8);
+    background: lightgrey;
+    font-size: 20px;
+    border-style: solid;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+  }

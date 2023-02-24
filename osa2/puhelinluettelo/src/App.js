@@ -25,10 +25,34 @@ const Contacts = (props) =>{
     <ul>
     {props.persons.filter(person => person.name.toLowerCase().includes(props.newFilter.toLowerCase())).map(person =>
       <div key = {person.name}>
-        <p>{person.name} {person.number}</p>
+        <p className = "elements">{person.name} {person.number}</p>
         <button onClick = {() => props.deleteP(person.id,person.name)}> delete</button>
       </div>)}
   </ul>
+  )
+}
+
+const Notification = (props) => {
+  if (props.message === null){
+    return null
+  }
+
+  return (
+    <div className = 'inform'>
+      {props.message}
+    </div>
+  )
+}
+
+const Error = (props) => {
+  if (props.message === null){
+    return null
+  }
+
+  return (
+    <div className = 'error'>
+      {props.message}
+    </div>
   )
 }
 
@@ -37,6 +61,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setnewNumber] = useState('')
   const [newFilter, setnewFilter] = useState('')
+  const [pageMessage , setPageMessage] = useState (null)
+  const [errorMessage, setErrorMessage] = useState (null)
 
   useEffect(() => {
     personService
@@ -73,38 +99,77 @@ const App = () => {
       if(confirmed){
         const foundPerson = persons.find(person => person.name === newName)
         const changedPerson = {...foundPerson, number: newNumber}
-        console.log(changedPerson);
         
         personService
-          .newNum(foundPerson.id,changedPerson)
+          .newNum(changedPerson.id,changedPerson)
           .then(response => {
             setPersons(persons.map(person => person.id === response.id ? response : person))
-            console.log('Persons set');
-          }).catch(('Error when editing existing person!')
-          )
+
+            setPageMessage(`${changedPerson.name}'s number was changed to ${changedPerson.number}`)
+
+            setTimeout(() => {
+              setPageMessage(null)
+            }, 5000)
+
+          }).catch(error => {
+            setErrorMessage(`Information of ${changedPerson.name} has already been deleted from the server`)
+
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 5000)
+          })
       }
     }else{
+
       personService
         .create(newPerson)
           .then(person => {
             setPersons(persons.concat(person))
-            console.log('Persons set');
-          }).catch(('Error when adding new person to server!')
-          )
-        }
+
+            setPageMessage(`Added ${newPerson.name} with number ${newPerson.number}`)
+
+            setTimeout(() => {
+              setPageMessage(null)
+            }, 5000)
+
+          }).catch(error => {
+            setErrorMessage(`Information of ${newPerson.name} has already been deleted from the server`)
+
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 5000)
+          })
+    }
   }
 
   const deletePerson = (id,name) => {
     const confirmed = window.confirm(`Delete ${name}?`)
     if(confirmed){
-      setPersons(persons.filter(person => person.id !== id))
       personService.dPerson(id)
+        .then(a => {
+          setPersons(persons.filter(person => person.id !== id))
+
+          setPageMessage(`Deleted ${name}`)
+
+          setTimeout(() => {
+            setPageMessage(null)
+          }, 5000)
+
+        }).catch(error => {
+          setErrorMessage(`Information of ${name} has already been deleted from the server`)
+
+          setTimeout(() => {
+            setErrorMessage(null)
+          }, 5000)
+        })
     }
   }
 
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message = {pageMessage} />
+      <Error message = {errorMessage} />
       <Filter value = {newFilter} handler = {handlefilterChange}/>
       <h2>Add new</h2>
       <AddNew addPerson = {addPerson} newName = {newName} handleNameChange = {handleNameChange} newNumber = {newNumber} handleNumberChange = {handleNumberChange}/>
