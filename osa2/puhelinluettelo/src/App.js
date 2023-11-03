@@ -98,12 +98,12 @@ const App = () => {
       const confirmed = window.confirm(`${newName} is already added to the phonebook, replace the old number with the new one?`)
       if(confirmed){
         const foundPerson = persons.find(person => person.name === newName)
-        const changedPerson = {...foundPerson, number: newNumber}
+        const changedPerson = {name: foundPerson.name, number: newNumber}
         
         personService
-          .newNum(changedPerson.id,changedPerson)
+          .newNum(foundPerson.id,changedPerson)
           .then(response => {
-            setPersons(persons.map(person => person.id === response.id ? response : person))
+            setPersons(persons.map(person => person.name === response.name ? response : person))
 
             setPageMessage(`${changedPerson.name}'s number was changed to ${changedPerson.number}`)
 
@@ -112,7 +112,7 @@ const App = () => {
             }, 5000)
 
           }).catch(error => {
-            setErrorMessage(`Information of ${changedPerson.name} has already been deleted from the server`)
+            setErrorMessage(error.response.data.error)
 
             setTimeout(() => {
               setErrorMessage(null)
@@ -133,7 +133,7 @@ const App = () => {
             }, 5000)
 
           }).catch(error => {
-            setErrorMessage(`Information of ${newPerson.name} has already been deleted from the server`)
+            setErrorMessage(error.response.data.error)
 
             setTimeout(() => {
               setErrorMessage(null)
